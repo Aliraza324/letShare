@@ -1,52 +1,94 @@
+import { useRef, useState } from 'react'
 import MainLayout from '../layouts/MainLayout'
+import ExploreCommunities from '../components/home/ExploreCommunities'
+import HeroSection from '../components/home/HeroSection'
+import PostComposer from '../components/home/PostComposer'
 import PostCard from '../components/shared/PostCard'
 import StoryCard from '../components/shared/StoryCard'
 import { feedPosts, stories } from '../mock/homeFeed'
 
 const Home = () => {
+  const storySliderRef = useRef(null)
+  const dragState = useRef({
+    isDown: false,
+    moved: false,
+    startX: 0,
+    scrollLeft: 0,
+  })
+  const [isDraggingStories, setIsDraggingStories] = useState(false)
+
+  const handleStoryPointerDown = (event) => {
+    const slider = storySliderRef.current
+    if (!slider) return
+
+    dragState.current = {
+      isDown: true,
+      moved: false,
+      startX: event.clientX,
+      scrollLeft: slider.scrollLeft,
+    }
+    setIsDraggingStories(true)
+    slider.setPointerCapture?.(event.pointerId)
+  }
+
+  const handleStoryPointerMove = (event) => {
+    const slider = storySliderRef.current
+    const state = dragState.current
+    if (!slider || !state.isDown) return
+
+    const distance = event.clientX - state.startX
+    if (Math.abs(distance) > 4) {
+      state.moved = true
+    }
+
+    slider.scrollLeft = state.scrollLeft - distance
+  }
+
+  const stopStoryDrag = (event) => {
+    const slider = storySliderRef.current
+    if (slider) {
+      slider.releasePointerCapture?.(event.pointerId)
+    }
+
+    dragState.current.isDown = false
+    setIsDraggingStories(false)
+  }
+
+  const handleStoryClickCapture = (event) => {
+    if (!dragState.current.moved) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    dragState.current.moved = false
+  }
+
   return (
     <MainLayout>
       <div className="space-y-5">
-        <section className="rounded-[22px] bg-[#efffda] p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#7ac900]">
-                LetShare Feed
-              </p>
-              <h1 className="mt-2 max-w-[360px] text-3xl font-extrabold leading-tight text-slate-950">
-                Discover what your communities are sharing today
-              </h1>
-            </div>
-            <button
-              type="button"
-              className="h-11 rounded-xl bg-[#a6ef00] px-5 text-sm font-bold text-black shadow-[0_10px_20px_rgba(122,201,0,0.25)]"
-            >
-              Create Post
-            </button>
-          </div>
-        </section>
+        <HeroSection />
 
-        <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <section
+          ref={storySliderRef}
+          className={`flex gap-4 overflow-x-auto scroll-smooth py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+            isDraggingStories ? 'cursor-grabbing select-none' : 'cursor-grab'
+          }`}
+          onClickCapture={handleStoryClickCapture}
+          onPointerDown={handleStoryPointerDown}
+          onPointerMove={handleStoryPointerMove}
+          onPointerUp={stopStoryDrag}
+          onPointerCancel={stopStoryDrag}
+          onPointerLeave={stopStoryDrag}
+        >
           {stories.map((story) => (
-            <StoryCard key={story.id} story={story} />
+            <div key={story.id} className="w-[142px] flex-none sm:w-[152px] lg:w-[164px]">
+              <StoryCard story={story} />
+            </div>
           ))}
         </section>
 
-        <section className="rounded-[22px] bg-white p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-          <textarea
-            rows={3}
-            placeholder="Share something with your communities..."
-            className="w-full resize-none rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm outline-none focus:border-[#a6ef00] focus:ring-4 focus:ring-[#a6ef00]/15"
-          />
-          <div className="mt-3 flex justify-end">
-            <button
-              type="button"
-              className="h-10 rounded-xl bg-slate-950 px-5 text-sm font-bold text-white"
-            >
-              Post
-            </button>
-          </div>
-        </section>
+        <PostComposer />
+
+        <ExploreCommunities />
 
         {feedPosts.map((post) => (
           <PostCard key={post.id} post={post} />

@@ -1,8 +1,15 @@
+import avatar from '../assets/images/avatar.jpg'
+import fatima from '../assets/images/fatima.jpg'
+import pinki from '../assets/images/pinki.png'
+import hr from '../assets/images/hr.jpg'
+import girl from '../assets/images/girl.jpg'
+
 export const stories = [
-  { id: 1, image: 'from-lime-200 to-emerald-500', title: 'Morning wins' },
-  { id: 2, image: 'from-sky-200 to-indigo-600', title: 'Creator chat' },
-  { id: 3, image: 'from-orange-200 to-pink-500', title: 'Design crew' },
-  { id: 4, image: 'from-purple-200 to-cyan-500', title: 'Travel notes' },
+  { id: 1, type: 'create', title: 'Share moment' },
+  { id: 2, image: fatima, avatar, title: 'Fatima' },
+  { id: 3, image: girl, avatar, title: 'Creator chat' },
+  { id: 4, image: hr, avatar, title: 'Design crew' },
+  { id: 5, image: pinki, avatar, title: 'Pinki' },
 ]
 
 export const suggestedUsers = [

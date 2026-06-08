@@ -14,7 +14,7 @@ const CommunityInterests = lazy(() =>
 const SelectCommunity = lazy(() =>
   import('../components/auth/SelectCommunity.jsx')
 )
-const Home = lazy(() => import('../components/Home.jsx'))
+const Home = lazy(() => import('../pages/Home.jsx'))
 
 const RouteLoader = () => (
   <div className="grid min-h-screen place-items-center bg-white text-sm font-medium text-slate-500">

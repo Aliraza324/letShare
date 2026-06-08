@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { User } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
@@ -5,17 +6,43 @@ import greenBg from '../../assets/images/greenBg.png'
 import forgotPic from '../../assets/images/forgotPic.png'
 import logo from '../../assets/images/logo.png'
 import { fadeUp } from '../../animations/animation'
+import Toast from '../../utils/toast.jsx'
 
 const ForgotPassword = () => {
   const navigate = useNavigate()
+  const [toast, setToast] = useState(null)
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    navigate('/verify-otp')
+    const form = event.currentTarget
+
+    if (!form.checkValidity()) {
+      setToast({
+        message: 'Please enter a valid email address.',
+        title: 'Reset error',
+        type: 'error',
+      })
+      form.reportValidity()
+      return
+    }
+
+    setToast({
+      message: 'Reset code sent successfully.',
+      title: 'Check your email',
+      type: 'success',
+    })
+    window.setTimeout(() => navigate('/verify-otp'), 700)
   }
 
   return (
     <main className="h-screen overflow-hidden bg-white text-slate-950">
+      <Toast
+        show={Boolean(toast)}
+        title={toast?.title}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
       <div className="grid h-screen grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,0.95fr)_minmax(390px,1.05fr)]">
         <section className="relative hidden h-screen items-center justify-center overflow-hidden lg:flex">
           <img
@@ -75,6 +102,8 @@ const ForgotPassword = () => {
                   <input
                     id="email"
                     type="email"
+                    name="email"
+                    required
                     placeholder="Enter your email"
                     className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
                   />

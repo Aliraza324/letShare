@@ -5,11 +5,13 @@ import greenBg from '../../assets/images/greenBg.png'
 import forgotPic from '../../assets/images/forgotPic.png'
 import logo from '../../assets/images/logo.png'
 import { fadeUp } from '../../animations/animation'
+import Toast from '../../utils/toast.jsx'
 
 const otpLength = 5
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState(Array(otpLength).fill(''))
+  const [toast, setToast] = useState(null)
   const inputRefs = useRef([])
   const navigate = useNavigate()
 
@@ -32,11 +34,33 @@ const VerifyOtp = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    navigate('/set-password')
+
+    if (otp.some((digit) => !digit)) {
+      setToast({
+        message: 'Please enter the complete verification code.',
+        title: 'OTP error',
+        type: 'error',
+      })
+      return
+    }
+
+    setToast({
+      message: 'OTP verified successfully.',
+      title: 'Verified',
+      type: 'success',
+    })
+    window.setTimeout(() => navigate('/set-password'), 700)
   }
 
   return (
     <main className="h-screen overflow-hidden bg-white text-slate-950">
+      <Toast
+        show={Boolean(toast)}
+        title={toast?.title}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
       <div className="grid h-screen grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,0.95fr)_minmax(390px,1.05fr)]">
         <section className="relative hidden h-screen items-center justify-center overflow-hidden lg:flex">
           <img

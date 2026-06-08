@@ -6,19 +6,59 @@ import greenBg from '../../assets/images/greenBg.png'
 import forgotPic from '../../assets/images/forgotPic.png'
 import logo from '../../assets/images/logo.png'
 import { fadeUp } from '../../animations/animation'
+import Toast from '../../utils/toast.jsx'
 
 const SetPassword = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [toast, setToast] = useState(null)
   const navigate = useNavigate()
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    navigate('/login')
+    const form = event.currentTarget
+    const password = form.elements.newPassword.value
+    const confirmPassword = form.elements.confirmPassword.value
+
+    if (!form.checkValidity()) {
+      setToast({
+        message: 'Please enter and confirm your new password.',
+        title: 'Password error',
+        type: 'error',
+      })
+      form.reportValidity()
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setToast({
+        message: 'Password and confirm password must match.',
+        title: 'Password error',
+        type: 'error',
+      })
+      form.elements.confirmPassword.setCustomValidity('Passwords do not match')
+      form.reportValidity()
+      form.elements.confirmPassword.setCustomValidity('')
+      return
+    }
+
+    setToast({
+      message: 'Your password has been updated.',
+      title: 'Password updated',
+      type: 'success',
+    })
+    window.setTimeout(() => navigate('/login'), 700)
   }
 
   return (
     <main className="h-screen overflow-hidden bg-white text-slate-950">
+      <Toast
+        show={Boolean(toast)}
+        title={toast?.title}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
       <div className="grid h-screen grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,0.95fr)_minmax(390px,1.05fr)]">
         <section className="relative hidden h-screen items-center justify-center overflow-hidden lg:flex">
           <img
@@ -77,7 +117,10 @@ const SetPassword = () => {
                   <Lock className="h-4 w-4 shrink-0 text-slate-400" />
                   <input
                     id="newPassword"
+                    name="newPassword"
                     type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
                     placeholder="Enter your password"
                     className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
                   />
@@ -114,7 +157,10 @@ const SetPassword = () => {
                   <Lock className="h-4 w-4 shrink-0 text-slate-400" />
                   <input
                     id="confirmPassword"
+                    name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
                     placeholder="Enter your password"
                     className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
                   />

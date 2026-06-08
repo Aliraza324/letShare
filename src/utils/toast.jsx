@@ -1,7 +1,9 @@
-import { Check, X } from 'lucide-react'
+import { AlertCircle, Check, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const Toast = ({ message, onClose, show, title }) => {
+const Toast = ({ message, onClose, show, title, type = 'success' }) => {
+  const isError = type === 'error'
+
   return (
     <AnimatePresence>
       {show && (
@@ -10,11 +12,21 @@ const Toast = ({ message, onClose, show, title }) => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -18, scale: 0.98 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
-          className="fixed right-4 top-4 z-50 flex w-[min(calc(100vw-32px),430px)] items-start gap-4 rounded border border-[#a6ef00] bg-white px-5 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.16)]"
+          className={`fixed right-4 top-4 z-50 flex w-[min(calc(100vw-32px),430px)] items-start gap-4 rounded border bg-white px-5 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.16)] ${
+            isError ? 'border-red-400' : 'border-[#a6ef00]'
+          }`}
           role="status"
         >
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#a6ef00] text-white">
-            <Check className="h-8 w-8" />
+          <span
+            className={`grid h-12 w-12 shrink-0 place-items-center rounded-full text-white ${
+              isError ? 'bg-red-500' : 'bg-[#a6ef00]'
+            }`}
+          >
+            {isError ? (
+              <AlertCircle className="h-7 w-7" />
+            ) : (
+              <Check className="h-8 w-8" />
+            )}
           </span>
           <div className="min-w-0 flex-1">
             <h2 className="text-base font-extrabold text-slate-950">

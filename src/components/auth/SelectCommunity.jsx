@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { ArrowRight, Search, SlidersHorizontal } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   communities,
   filterCommunitySizes,
@@ -14,6 +15,7 @@ import signUpPic from '../../assets/images/signUp.png'
 import communityPic from '../../assets/images/community.png'
 import Toast from '../../utils/toast.jsx'
 import { fadeUp } from '../../animations/animation'
+import { joinCommunity as joinCommunityAction } from '../../store/signupFlowSlice'
 
 const communityImages = {
   art: sidebarBottom,
@@ -26,13 +28,14 @@ const communityImages = {
 
 const SelectCommunity = () => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const storedJoinedIds = useSelector(
+    (state) => state.signupFlow.joinedCommunityIds,
+  )
   const [query, setQuery] = useState('')
   const [hashtags, setHashtags] = useState('#travel, #fitness')
   const [activeLocation, setActiveLocation] = useState('Area')
   const [activeSize, setActiveSize] = useState('medium')
-  const [joinedIds, setJoinedIds] = useState(
-    communities.filter((community) => community.joined).map(({ id }) => id),
-  )
   const [showToast, setShowToast] = useState(false)
 
   const filteredCommunities = useMemo(() => {
@@ -50,12 +53,10 @@ const SelectCommunity = () => {
     )
   }, [query])
 
-  const progress = Math.min(100, Math.max(68, joinedIds.length * 18 + 50))
+  const progress = Math.min(100, Math.max(68, storedJoinedIds.length * 18 + 50))
 
   const joinCommunity = (communityId) => {
-    setJoinedIds((current) =>
-      current.includes(communityId) ? current : [...current, communityId],
-    )
+    dispatch(joinCommunityAction(communityId))
     setShowToast(true)
   }
 
@@ -238,7 +239,7 @@ const SelectCommunity = () => {
 
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {filteredCommunities.map((community) => {
-              const isJoined = joinedIds.includes(community.id)
+              const isJoined = storedJoinedIds.includes(community.id)
 
               return (
                 <motion.article

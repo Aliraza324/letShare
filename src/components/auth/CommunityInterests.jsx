@@ -2,9 +2,15 @@ import { useMemo, useState } from 'react'
 import { ArrowRight, Plus, Search, X } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import communityPic from '../../assets/images/community.png'
 import worldPic from '../../assets/images/world.png'
 import { fadeUp } from '../../animations/animation'
+import {
+  setCustomInterests as saveCustomInterests,
+  setSelectedInterests as saveSelectedInterests,
+} from '../../store/signupFlowSlice'
+import Toast from '../../utils/toast.jsx'
 
 const interestGroups = [
   {
@@ -44,14 +50,22 @@ const interestGroups = [
 ]
 
 const CommunityInterests = () => {
+  const storedSelectedInterests = useSelector(
+    (state) => state.signupFlow.selectedInterests,
+  )
+  const storedCustomInterests = useSelector(
+    (state) => state.signupFlow.customInterests,
+  )
   const [selectedInterests, setSelectedInterests] = useState([
-    'AI',
-    'Travel',
-    'Fitness',
+    ...storedSelectedInterests,
   ])
-  const [customInterests, setCustomInterests] = useState([])
+  const [customInterests, setCustomInterests] = useState([
+    ...storedCustomInterests,
+  ])
   const [searchValue, setSearchValue] = useState('')
+  const [toast, setToast] = useState(null)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const groups = useMemo(() => {
     if (!customInterests.length) {
@@ -110,6 +124,11 @@ const CommunityInterests = () => {
     setSelectedInterests((current) =>
       current.includes(nextInterest) ? current : [...current, nextInterest],
     )
+    setToast({
+      message: `${nextInterest} has been added to your interests.`,
+      title: 'Interest added',
+      type: 'success',
+    })
     setSearchValue('')
   }
 
@@ -120,8 +139,35 @@ const CommunityInterests = () => {
 
   const progress = Math.min(100, Math.max(20, selectedInterests.length * 22 + 2))
 
+  const continueToCommunities = () => {
+    if (!selectedInterests.length) {
+      setToast({
+        message: 'Please select at least one interest before continuing.',
+        title: 'Select an interest',
+        type: 'error',
+      })
+      return
+    }
+
+    dispatch(saveSelectedInterests(selectedInterests))
+    dispatch(saveCustomInterests(customInterests))
+    setToast({
+      message: 'Your interests are saved.',
+      title: 'Saved',
+      type: 'success',
+    })
+    window.setTimeout(() => navigate('/select-community'), 500)
+  }
+
   return (
     <main className="min-h-screen bg-[#fbfff4] text-slate-950">
+      <Toast
+        show={Boolean(toast)}
+        title={toast?.title}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[minmax(360px,0.95fr)_minmax(430px,1.05fr)]">
         <section className="relative flex min-h-[48vh] items-center justify-center overflow-hidden px-5 py-8 lg:min-h-screen lg:px-10">
           <div className="absolute left-1/2 top-1/2 h-[560px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ddffb9]/55 blur-3xl" />
@@ -266,7 +312,7 @@ const CommunityInterests = () => {
                 <motion.button
                   type="button"
                   className="flex h-12 min-w-[190px] items-center justify-center gap-2 rounded-xl bg-[#a6ef00] px-7 text-sm font-bold text-black shadow-[0_10px_18px_rgba(122,201,0,0.30)]"
-                  onClick={() => navigate('/select-community')}
+                  onClick={continueToCommunities}
                   whileHover={{ y: -2, scale: 1.01 }}
                   whileTap={{ scale: 0.97 }}
                 >

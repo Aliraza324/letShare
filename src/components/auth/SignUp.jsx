@@ -2,16 +2,21 @@ import { useState } from 'react'
 import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import greenBg from '../../assets/images/greenBg.png'
 import signUpPic from '../../assets/images/signUp.png'
 import logo from '../../assets/images/logo.png'
 import { fadeUp } from '../../animations/animation'
+import { setSignupUser } from '../../store/signupFlowSlice'
+import Toast from '../../utils/toast.jsx'
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isPublic, setIsPublic] = useState(true)
+  const [toast, setToast] = useState(null)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -20,22 +25,51 @@ const SignUp = () => {
     const confirmPassword = form.elements.confirmPassword.value
 
     if (!form.checkValidity()) {
+      setToast({
+        message: 'Please fill all required fields correctly.',
+        title: 'Signup error',
+        type: 'error',
+      })
       form.reportValidity()
       return
     }
 
     if (password !== confirmPassword) {
+      setToast({
+        message: 'Password and confirm password must match.',
+        title: 'Signup error',
+        type: 'error',
+      })
       form.elements.confirmPassword.setCustomValidity('Passwords do not match')
       form.reportValidity()
       form.elements.confirmPassword.setCustomValidity('')
       return
     }
 
-    navigate('/communities')
+    dispatch(
+      setSignupUser({
+        email: form.elements.email.value,
+        fullName: form.elements.fullName.value,
+        isPublic,
+      }),
+    )
+    setToast({
+      message: 'Account created successfully. Choose your interests next.',
+      title: 'Signup successful',
+      type: 'success',
+    })
+    window.setTimeout(() => navigate('/communities'), 700)
   }
 
   return (
     <main className="min-h-screen bg-white text-slate-950">
+      <Toast
+        show={Boolean(toast)}
+        title={toast?.title}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
       <div className="grid min-h-screen grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,0.95fr)_minmax(390px,1.05fr)]">
         <section className="relative hidden min-h-screen items-center justify-center overflow-hidden lg:flex">
           <img

@@ -1,19 +1,51 @@
 import { useState } from 'react'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import greenBg from '../../assets/images/greenBg.png'
 import loginPic from '../../assets/images/loginPic.png'
 import logo from '../../assets/images/logo.png'
 import googleIcon from '../../assets/images/googleIcon.png'
 import fbIcon from '../../assets/images/fbIcon.png'
 import { fadeUp } from '../../animations/animation'
+import Toast from '../../utils/toast.jsx'
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
+  const [toast, setToast] = useState(null)
+  const navigate = useNavigate()
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    const form = event.currentTarget
+
+    if (!form.checkValidity()) {
+      setToast({
+        message: 'Please enter your email and password.',
+        title: 'Login error',
+        type: 'error',
+      })
+      form.reportValidity()
+      return
+    }
+
+    setToast({
+      message: 'You are logged in successfully.',
+      title: 'Login successful',
+      type: 'success',
+    })
+    window.setTimeout(() => navigate('/home'), 700)
+  }
 
   return (
     <main className="h-screen overflow-hidden bg-white text-slate-950">
+      <Toast
+        show={Boolean(toast)}
+        title={toast?.title}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
       <div className="grid h-screen grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,0.95fr)_minmax(390px,1.05fr)]">
         <section className="relative hidden h-screen items-center justify-center overflow-hidden lg:flex">
           <img
@@ -56,7 +88,7 @@ const Login = () => {
               </p>
             </div>
 
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label
                   htmlFor="email"
@@ -68,7 +100,9 @@ const Login = () => {
                   <Mail className="h-4 w-4 shrink-0 text-slate-400" />
                   <input
                     id="email"
-                    type="text"
+                    type="email"
+                    name="email"
+                    required
                     placeholder="name@company.com"
                     className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
                   />
@@ -94,7 +128,9 @@ const Login = () => {
                   <Lock className="h-4 w-4 shrink-0 text-slate-400" />
                   <input
                     id="password"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
+                    required
                     placeholder="********"
                     className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
                   />

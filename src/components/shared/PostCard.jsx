@@ -10,6 +10,7 @@ import {
   Smile,
 } from 'lucide-react'
 import CommentCard from './CommentCard'
+import { useToast } from '../../utils/toastContext'
 import { comments as seedComments } from '../../mock/homeFeed'
 import avatar from '../../assets/images/avatar.jpg'
 import boyAvatar from '../../assets/images/boy.png'
@@ -138,6 +139,7 @@ const MentionSuggestions = ({ query, onSelect }) => {
 }
 
 const PostCard = ({ post }) => {
+  const { showToast } = useToast()
   const [showComments, setShowComments] = useState(false)
   const [commentItems, setCommentItems] = useState(() => createSeedComments())
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COMMENTS)
@@ -241,6 +243,14 @@ const PostCard = ({ post }) => {
     )
   }
 
+  const handleSavePost = () => {
+    showToast({
+      title: 'Post saved',
+      message: 'This post has been added to your saved collection.',
+      type: 'success',
+    })
+  }
+
   return (
     <article className="overflow-hidden rounded-[18px] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.07)]">
       <div className="flex items-start gap-3 px-4 pt-4">
@@ -329,6 +339,7 @@ const PostCard = ({ post }) => {
           type="button"
           className="transition hover:text-slate-700"
           aria-label="Save post"
+          onClick={handleSavePost}
         >
           <Bookmark className="h-5 w-5" />
         </button>

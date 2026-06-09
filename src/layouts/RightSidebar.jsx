@@ -1,4 +1,4 @@
-import { Clock, MapPin, MessageCircle, MoreHorizontal } from 'lucide-react'
+import { Clock, MapPin, MoreHorizontal } from 'lucide-react'
 import david from '../assets/images/david.jpg'
 import jannat from '../assets/images/jannat.jpg'
 import john from '../assets/images/john.jpg'

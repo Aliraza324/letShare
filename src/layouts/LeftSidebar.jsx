@@ -12,7 +12,7 @@ import {
   X,
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import logo from '../assets/images/logo.png'
 
 const mainMenu = [
@@ -35,6 +35,8 @@ const myCommunities = [
 ]
 
 const SidebarContent = ({ onNavigate }) => {
+  const { pathname } = useLocation()
+
   return (
     <div className="space-y-4">
       <section className="rounded-[18px] bg-white p-4 shadow-[0_18px_45px_rgba(15,23,42,0.04)]">
@@ -51,12 +53,12 @@ const SidebarContent = ({ onNavigate }) => {
           Main Menu
         </h2>
         <nav className="space-y-1">
-          {mainMenu.map(({ icon: Icon, label, to }, index) => (
+          {mainMenu.map(({ icon: Icon, label, to }) => (
             <Link
               key={label}
               to={to}
               className={`flex h-10 w-full items-center gap-3 rounded-lg px-3 text-sm font-medium ${
-                index === 0
+                pathname === to
                   ? 'bg-[#def7a8] text-slate-950'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}

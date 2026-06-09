@@ -16,6 +16,7 @@ const SelectCommunity = lazy(() =>
   import('../components/auth/SelectCommunity.jsx')
 )
 const Home = lazy(() => import('../pages/Home.jsx'))
+const Saved = lazy(() => import('../pages/Saved.jsx'))
 
 const AppRoutes = () => {
   return (
@@ -31,6 +32,7 @@ const AppRoutes = () => {
           <Route path="/communities" element={<CommunityInterests />} />
           <Route path="/select-community" element={<SelectCommunity />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/saved" element={<Saved />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

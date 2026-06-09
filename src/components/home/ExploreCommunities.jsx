@@ -1,6 +1,7 @@
-import { Flame, Star } from 'lucide-react'
+import { Flame, Plus, Star } from 'lucide-react'
 import fitnessImage from '../../assets/images/com.png'
 import photographyImage from '../../assets/images/communiti.png'
+import travelImage from '../../assets/images/community.png'
 import fitnessMembers from '../../assets/images/Container (1).png'
 import photographyMembers from '../../assets/images/Container.png'
 import { communities } from '../../mock/communities'
@@ -35,22 +36,87 @@ const featuredCommunities = communities
     ...communityMedia[community.id],
   }))
 
+const mobileCommunities = [
+  {
+    id: 'travel-lovers',
+    image: travelImage,
+    badge: 'Trending',
+    title: 'Travel Lovers 🌍',
+    membersImage: photographyMembers,
+    members: 'Member In this Community',
+  },
+  {
+    id: 'fitness-enthusiasts',
+    image: fitnessImage,
+    badge: 'Popular',
+    title: 'Fitness Enthusiasts 💪',
+    membersImage: fitnessMembers,
+    members: 'Member In this Community',
+  },
+]
+
 const ExploreCommunities = () => {
   return (
     <section>
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <h2 className="text-2xl font-extrabold text-black">
+      <div className="mb-3 flex items-center justify-between gap-4 sm:mb-5">
+        <h2 className="text-lg font-extrabold text-black sm:text-2xl">
           Explore Communities
         </h2>
         <button
           type="button"
-          className="h-10 rounded-full bg-[#ecffc8] px-5 text-sm font-medium text-[#7ac900] transition hover:bg-[#e1ffad]"
+          className="text-[10px] font-bold text-[#7ac900] transition hover:text-[#65a900] sm:h-10 sm:rounded-full sm:bg-[#ecffc8] sm:px-5 sm:text-sm sm:font-medium sm:hover:bg-[#e1ffad]"
         >
           View All
         </button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="space-y-3 sm:hidden">
+        {mobileCommunities.map((community) => (
+          <article
+            key={community.id}
+            className="relative h-[163px] overflow-hidden rounded-lg bg-slate-100"
+          >
+            <img
+              src={community.image}
+              alt={community.title}
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/68 via-black/10 to-black/0" />
+
+            <span className="absolute left-4 top-3 rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold text-slate-950">
+              {community.badge}
+            </span>
+
+            <div className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-3">
+              <div className="min-w-0 text-white">
+                <h3 className="truncate text-base font-extrabold leading-none">
+                  {community.title}
+                </h3>
+                <div className="mt-2 flex items-center gap-1.5">
+                  <img
+                    src={community.membersImage}
+                    alt=""
+                    className="h-5 w-[58px] shrink-0 object-contain object-left"
+                  />
+                  <span className="max-w-[64px] text-[6px] font-medium leading-tight text-white/90">
+                    {community.members}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-white/28 px-4 text-xs font-bold text-white backdrop-blur-md"
+              >
+                Join Now
+                <Plus className="h-4 w-4 text-[#8ddf00] stroke-[3]" />
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden gap-4 sm:grid lg:grid-cols-2">
         {featuredCommunities.map((community) => {
           const BadgeIcon = community.icon
 

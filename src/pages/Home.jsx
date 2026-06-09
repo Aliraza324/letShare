@@ -145,11 +145,13 @@ const Home = () => {
         </motion.div>
 
         <motion.section className="space-y-3" variants={sectionVariants}>
-          <h2 className="text-xl font-extrabold text-black">For You</h2>
-          <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-lg font-extrabold text-slate-950 sm:text-xl">
+            Explore Newest Feed
+          </h2>
+          <div className="grid grid-cols-3 items-center gap-2 sm:flex sm:flex-wrap sm:gap-3">
             <motion.button
               type="button"
-              className="h-10 rounded-full bg-[#8ddf00] px-6 text-sm font-extrabold text-black"
+              className="h-9 min-w-0 rounded-full bg-[#8ddf00] px-2 text-xs font-extrabold text-black sm:h-10 sm:px-6 sm:text-sm"
               whileHover={{ y: -2, scale: 1.03 }}
               whileTap={{ scale: 0.96 }}
             >
@@ -157,7 +159,7 @@ const Home = () => {
             </motion.button>
             <motion.button
               type="button"
-              className="h-10 rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-500 transition hover:bg-slate-50"
+              className="h-9 min-w-0 rounded-full border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-50 sm:h-10 sm:px-5 sm:text-sm"
               whileHover={{ y: -2, scale: 1.03 }}
               whileTap={{ scale: 0.96 }}
             >
@@ -165,7 +167,7 @@ const Home = () => {
             </motion.button>
             <motion.button
               type="button"
-              className="h-10 rounded-full border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-500 transition hover:bg-slate-50"
+              className="h-9 min-w-0 rounded-full border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-50 sm:h-10 sm:px-5 sm:text-sm"
               whileHover={{ y: -2, scale: 1.03 }}
               whileTap={{ scale: 0.96 }}
             >

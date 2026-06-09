@@ -1,15 +1,113 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Bell,
+  ChevronRight,
   Menu,
   MessageCircle,
   MessageSquare,
   Plus,
   Search,
+  X,
 } from 'lucide-react'
 import logo from '../assets/images/logo.png'
 import avatar from '../assets/images/avatar.jpg'
 
+const profileLinks = [
+  { label: 'Manage Communities', to: '/select-community' },
+  { label: 'Finance & Billing', to: '/billing' },
+  { label: 'Legal & Verification', to: '/verification' },
+]
+
+const ProfileModal = ({ onClose }) => {
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/10 px-3 pt-20 backdrop-blur-[1px] md:bg-transparent md:pt-20">
+      <button
+        type="button"
+        className="absolute inset-0"
+        aria-label="Close profile menu"
+        onClick={onClose}
+      />
+
+      <div className="relative mx-auto w-full max-w-[352px] rounded-[28px] bg-white px-6 py-7 shadow-[0_18px_45px_rgba(15,23,42,0.18)] md:mr-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-950">User</h2>
+          <button
+            type="button"
+            className="grid h-8 w-8 place-items-center rounded-full text-slate-950 transition hover:bg-slate-50"
+            aria-label="Close profile menu"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <Link
+          to="/profile"
+          className="mt-5 flex items-center gap-3 rounded-xl py-2 transition hover:bg-slate-50"
+          onClick={onClose}
+        >
+          <img
+            src={avatar}
+            alt="User profile"
+            className="h-11 w-11 rounded-full object-cover"
+          />
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-sm font-bold text-slate-950">
+              User Name
+            </h3>
+            <p className="truncate text-xs font-medium text-slate-600">
+              Nafuser@gmail.com
+            </p>
+          </div>
+          <ChevronRight className="h-5 w-5 shrink-0 text-slate-950" />
+        </Link>
+
+        <div className="my-4 h-px bg-slate-200" />
+
+        <nav className="space-y-1">
+          {profileLinks.map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              className="flex h-10 items-center justify-between rounded-xl text-sm font-bold text-slate-950 transition hover:bg-slate-50"
+              onClick={onClose}
+            >
+              {item.label}
+              <ChevronRight className="h-5 w-5 text-slate-950" />
+            </Link>
+          ))}
+        </nav>
+
+        <div className="my-4 h-px bg-slate-200" />
+
+        <Link
+          to="/business-profile"
+          className="flex h-11 items-center justify-center rounded-xl border border-dashed border-slate-300 text-sm font-medium text-slate-500 transition hover:border-[#a6ef00] hover:text-[#65a900]"
+          onClick={onClose}
+        >
+          Switch To Business Profile
+        </Link>
+
+        <div className="my-5 h-px bg-slate-200" />
+
+        <div className="flex justify-end">
+          <Link
+            to="/login"
+            className="flex h-9 min-w-[110px] items-center justify-center rounded-full bg-[#9bf000] px-6 text-sm font-medium text-black transition hover:bg-[#8be000]"
+            onClick={onClose}
+          >
+            Log Out
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const Header = ({ onMenuClick }) => {
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-lg">
       <div className="bg-[#f5fde4] px-5 py-3 md:hidden">
@@ -44,11 +142,17 @@ const Header = ({ onMenuClick }) => {
               </span>
             </button>
 
-            <img
-              src={avatar}
-              alt="Profile"
-              className="h-8 w-8 rounded-full border-2 border-slate-950 object-cover p-0.5"
-            />
+            <button
+              type="button"
+              aria-label="Open profile menu"
+              onClick={() => setIsProfileOpen(true)}
+            >
+              <img
+                src={avatar}
+                alt="Profile"
+                className="h-8 w-8 rounded-full border-2 border-slate-950 object-cover p-0.5"
+              />
+            </button>
           </div>
         </div>
       </div>
@@ -110,13 +214,21 @@ const Header = ({ onMenuClick }) => {
             <Plus className="h-5 w-5 stroke-[3]" />
           </button>
           <span className="hidden h-10 w-px bg-slate-100 md:block" />
-          <img
-            src={avatar}
-            alt="Profile"
-            className="h-10 w-10 rounded-full object-cover lg:h-11 lg:w-11"
-          />
+          <button
+            type="button"
+            aria-label="Open profile menu"
+            onClick={() => setIsProfileOpen(true)}
+          >
+            <img
+              src={avatar}
+              alt="Profile"
+              className="h-10 w-10 rounded-full object-cover lg:h-11 lg:w-11"
+            />
+          </button>
         </div>
       </div>
+
+      {isProfileOpen && <ProfileModal onClose={() => setIsProfileOpen(false)} />}
     </header>
   )
 }

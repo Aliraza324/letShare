@@ -132,12 +132,7 @@ const RightSidebar = ({ children }) => {
           </div>
         </section>
 
-        <button className="absolute bottom-8 right-8 grid h-14 w-14 place-items-center rounded-full bg-[#a6ef00] text-white shadow-[0_20px_40px_rgba(122,201,0,0.35)]">
-          <MessageCircle className="h-7 w-7 fill-white/20" />
-          <span className="absolute -right-1 -top-1 grid h-6 w-6 place-items-center rounded-full bg-red-500 text-xs font-extrabold text-white">
-            3
-          </span>
-        </button>
+     
       </div>
     </aside>
   )

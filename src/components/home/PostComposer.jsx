@@ -1,9 +1,27 @@
 import { Image, Smile, Video, X } from 'lucide-react'
 import boyAvatar from '../../assets/images/boy.png'
+import sendIcon from '../../assets/images/svg.png'
 
 const PostComposer = () => {
   return (
-    <section className="rounded-[22px] bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:p-7">
+    <section className="rounded-full bg-white px-4 py-1.5 shadow-[0_8px_18px_rgba(15,23,42,0.12)] sm:rounded-[22px] sm:p-7 sm:shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+      <div className="flex items-center gap-2 sm:hidden">
+        <input
+          type="text"
+          placeholder="What's on your mind..."
+          className="h-8 min-w-0 flex-1 bg-transparent text-xs font-medium text-slate-700 outline-none placeholder:text-slate-500"
+        />
+
+        <button
+          type="button"
+          className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-[#9bf000] px-3 text-[11px] font-extrabold text-black shadow-[0_6px_14px_rgba(122,201,0,0.24)]"
+        >
+          <img src={sendIcon} alt="" className="h-3 w-3 object-contain" />
+          Post Now
+        </button>
+      </div>
+
+      <div className="hidden sm:block">
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">
           <img
@@ -69,6 +87,7 @@ const PostComposer = () => {
             Post Now
           </button>
         </div>
+      </div>
       </div>
     </section>
   )

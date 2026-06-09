@@ -4,7 +4,7 @@ import heroImage from '../../assets/images/hero.png'
 const HeroSection = () => {
   return (
     <section
-      className="relative overflow-hidden rounded-[22px] border border-slate-100 bg-white bg-none bg-contain bg-right bg-no-repeat shadow-[0_18px_45px_rgba(15,23,42,0.08)] md:bg-[image:var(--hero-bg)]"
+      className="relative hidden overflow-hidden rounded-[22px] border border-slate-100 bg-white bg-none bg-contain bg-right bg-no-repeat shadow-[0_18px_45px_rgba(15,23,42,0.08)] md:block md:bg-[image:var(--hero-bg)]"
       style={{ '--hero-bg': `url(${heroImage})` }}
     >
       <div className="relative min-h-[270px] p-6 sm:p-8 lg:min-h-[390px] lg:p-10">

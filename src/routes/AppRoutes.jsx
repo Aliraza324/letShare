@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import GlobalLoader from '../components/shared/GlobalLoader.jsx'
 
 const Login = lazy(() => import('../components/auth/Login.jsx'))
 const SignUp = lazy(() => import('../components/auth/SignUp.jsx'))
@@ -16,16 +17,10 @@ const SelectCommunity = lazy(() =>
 )
 const Home = lazy(() => import('../pages/Home.jsx'))
 
-const RouteLoader = () => (
-  <div className="grid min-h-screen place-items-center bg-white text-sm font-medium text-slate-500">
-    Loading...
-  </div>
-)
-
 const AppRoutes = () => {
   return (
     <BrowserRouter>
-      <Suspense fallback={<RouteLoader />}>
+      <Suspense fallback={<GlobalLoader />}>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />

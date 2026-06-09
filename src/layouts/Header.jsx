@@ -1,5 +1,6 @@
 import {
   Bell,
+  Menu,
   MessageCircle,
   MessageSquare,
   Plus,
@@ -8,59 +9,47 @@ import {
 import logo from '../assets/images/logo.png'
 import avatar from '../assets/images/avatar.jpg'
 
-const Header = () => {
+const Header = ({ onMenuClick }) => {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-lg">
-      <div className="md:hidden">
-        <div className="flex h-14 items-center justify-between px-4">
-          <img
-            src={logo}
-            alt="LetShare"
-            className="h-11 w-11 shrink-0 rounded-2xl object-contain shadow-[0_8px_18px_rgba(15,23,42,0.14)]"
-          />
+      <div className="bg-[#f4fbdf] px-4 py-3 md:hidden">
+        <div className="flex h-12 items-center gap-3">
+          <button
+            type="button"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black text-white shadow-[0_10px_22px_rgba(15,23,42,0.12)]"
+            aria-label="Open menu"
+            onClick={onMenuClick}
+          >
+            <Menu className="h-6 w-6 stroke-[3]" />
+          </button>
 
-          <div className="flex items-center gap-0.5 text-slate-600">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-medium text-slate-600">
+              Samra! Great Day
+            </p>
+            <h1 className="mt-0.5 truncate text-base font-extrabold leading-none text-slate-950">
+              Welcome Back!
+            </h1>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-3">
             <button
               type="button"
-              className="relative grid h-10 w-10 place-items-center rounded-lg text-slate-600 transition hover:bg-slate-50"
+              className="relative grid h-10 w-10 place-items-center rounded-xl bg-white text-slate-500 shadow-[0_10px_20px_rgba(15,23,42,0.06)]"
               aria-label="Notifications"
             >
               <Bell className="h-5 w-5" />
-              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-red-500" />
+              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#b7f238] px-1 text-xs font-bold leading-none text-slate-950">
+                3
+              </span>
             </button>
-            <button
-              type="button"
-              className="grid h-10 w-10 place-items-center rounded-lg text-slate-600 transition hover:bg-slate-50"
-              aria-label="Messages"
-            >
-              <MessageCircle className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              className="grid h-10 w-10 place-items-center rounded-lg text-slate-600 transition hover:bg-slate-50"
-              aria-label="Create"
-            >
-              <Plus className="h-5 w-5 stroke-[2.6]" />
-            </button>
-          </div>
-        </div>
 
-        <div className="flex h-16 items-center gap-3 px-4">
-          <img
-            src={avatar}
-            alt="Profile"
-            className="h-11 w-11 shrink-0 rounded-full object-cover"
-          />
-
-          <label className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 text-slate-500 shadow-inner">
-            <Search className="h-5 w-5 shrink-0 stroke-[2.5]" />
-            <input
-              type="text"
-              placeholder="Search LetShare"
-              className="h-full min-w-0 flex-1 bg-transparent text-base font-medium text-slate-950 outline-none placeholder:text-slate-400"
-              aria-label="Search LetShare"
+            <img
+              src={avatar}
+              alt="Profile"
+              className="h-10 w-10 rounded-full border-2 border-slate-950 object-cover p-0.5"
             />
-          </label>
+          </div>
         </div>
       </div>
 

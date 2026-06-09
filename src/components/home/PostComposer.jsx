@@ -4,19 +4,19 @@ import sendIcon from '../../assets/images/svg.png'
 
 const PostComposer = () => {
   return (
-    <section className="rounded-full bg-white px-4 py-1.5 shadow-[0_8px_18px_rgba(15,23,42,0.12)] sm:rounded-[22px] sm:p-7 sm:shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+    <section className="rounded-full bg-white px-4 py-2 shadow-[0_8px_18px_rgba(15,23,42,0.12)] sm:rounded-[22px] sm:p-7 sm:shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
       <div className="flex items-center gap-2 sm:hidden">
         <input
           type="text"
           placeholder="What's on your mind..."
-          className="h-8 min-w-0 flex-1 bg-transparent text-xs font-medium text-slate-700 outline-none placeholder:text-slate-500"
+          className="h-7 min-w-0 flex-1 bg-transparent text-[11px] font-medium text-slate-700 outline-none placeholder:text-slate-500"
         />
 
         <button
           type="button"
-          className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-[#9bf000] px-3 text-[11px] font-extrabold text-black shadow-[0_6px_14px_rgba(122,201,0,0.24)]"
+          className="flex h-7 shrink-0 items-center gap-1 rounded-full bg-[#9bf000] px-3 text-[9px] font-extrabold text-black shadow-[0_6px_14px_rgba(122,201,0,0.24)]"
         >
-          <img src={sendIcon} alt="" className="h-3 w-3 object-contain" />
+          <img src={sendIcon} alt="" className="h-2.5 w-2.5 object-contain" />
           Post Now
         </button>
       </div>

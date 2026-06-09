@@ -101,7 +101,7 @@ const Home = () => {
   return (
     <MainLayout>
       <motion.div
-        className="space-y-5"
+        className="space-y-4 sm:space-y-5"
         variants={pageVariants}
         initial="hidden"
         animate="show"
@@ -126,7 +126,7 @@ const Home = () => {
           {stories.map((story) => (
             <motion.div
               key={story.id}
-              className="w-[92px] flex-none sm:w-[152px] lg:w-[164px]"
+              className="w-16 flex-none sm:w-[152px] lg:w-[164px]"
               variants={storyVariants}
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.97 }}

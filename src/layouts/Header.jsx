@@ -12,34 +12,34 @@ import avatar from '../assets/images/avatar.jpg'
 const Header = ({ onMenuClick }) => {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-lg">
-      <div className="bg-[#f4fbdf] px-4 py-3 md:hidden">
-        <div className="flex h-12 items-center gap-3">
+      <div className="bg-[#f5fde4] px-5 py-3 md:hidden">
+        <div className="flex h-11 items-center gap-3">
           <button
             type="button"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black text-white shadow-[0_10px_22px_rgba(15,23,42,0.12)]"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black text-white shadow-[0_8px_18px_rgba(15,23,42,0.12)]"
             aria-label="Open menu"
             onClick={onMenuClick}
           >
-            <Menu className="h-6 w-6 stroke-[3]" />
+            <Menu className="h-5 w-5 stroke-[3]" />
           </button>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium text-slate-600">
+            <p className="truncate text-[9px] font-medium leading-tight text-slate-600">
               Samra! Great Day
             </p>
-            <h1 className="mt-0.5 truncate text-base font-extrabold leading-none text-slate-950">
+            <h1 className="mt-1 truncate text-sm font-extrabold leading-none text-slate-950">
               Welcome Back!
             </h1>
           </div>
 
-          <div className="flex shrink-0 items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              className="relative grid h-10 w-10 place-items-center rounded-xl bg-white text-slate-500 shadow-[0_10px_20px_rgba(15,23,42,0.06)]"
+              className="relative grid h-8 w-8 place-items-center rounded-lg bg-white text-slate-500 shadow-[0_8px_16px_rgba(15,23,42,0.06)]"
               aria-label="Notifications"
             >
-              <Bell className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#b7f238] px-1 text-xs font-bold leading-none text-slate-950">
+              <Bell className="h-4 w-4" />
+              <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#b7f238] px-1 text-[10px] font-bold leading-none text-slate-950">
                 3
               </span>
             </button>
@@ -47,7 +47,7 @@ const Header = ({ onMenuClick }) => {
             <img
               src={avatar}
               alt="Profile"
-              className="h-10 w-10 rounded-full border-2 border-slate-950 object-cover p-0.5"
+              className="h-8 w-8 rounded-full border-2 border-slate-950 object-cover p-0.5"
             />
           </div>
         </div>

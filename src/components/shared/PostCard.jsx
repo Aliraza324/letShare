@@ -263,7 +263,7 @@ const PostCard = ({ post }) => {
   }
 
   return (
-    <article className="overflow-hidden rounded-[18px] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.07)]">
+    <article className="overflow-hidden rounded-[18px] bg-white ">
       <div className="flex items-start gap-3 px-4 pt-4">
         <img
           src={post.avatar}

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight, Send, Smile, X } from 'lucide-react'
 import MainLayout from '../layouts/MainLayout'
 import ExploreCommunities from '../components/home/ExploreCommunities'
 import HeroSection from '../components/home/HeroSection'
@@ -43,6 +44,9 @@ const storyVariants = {
   },
 }
 
+const storyReactions = ['Like', 'Love', 'Haha', 'Wow', 'Sad']
+const storyViewers = ['Ali', 'Ahmed', 'Sara', 'John']
+
 const Home = () => {
   const storySliderRef = useRef(null)
   const uploadedStoryUrls = useRef([])
@@ -54,6 +58,17 @@ const Home = () => {
   })
   const [isDraggingStories, setIsDraggingStories] = useState(false)
   const [storyItems, setStoryItems] = useState(stories)
+  const [selectedStoryId, setSelectedStoryId] = useState(null)
+  const [storyReply, setStoryReply] = useState('')
+  const [selectedReaction, setSelectedReaction] = useState('')
+  const viewableStories = useMemo(
+    () => storyItems.filter((story) => story.type !== 'create'),
+    [storyItems],
+  )
+  const selectedStoryIndex = viewableStories.findIndex(
+    (story) => story.id === selectedStoryId,
+  )
+  const selectedStory = selectedStoryIndex >= 0 ? viewableStories[selectedStoryIndex] : null
 
   useEffect(() => {
     const objectUrls = uploadedStoryUrls.current
@@ -85,11 +100,68 @@ const Home = () => {
       ...uploadedStories,
       ...currentStories.slice(1),
     ])
+    setSelectedStoryId(uploadedStories[0].id)
   }
+
+  const handleOpenStory = useCallback((story) => {
+    setSelectedStoryId(story.id)
+    setSelectedReaction('')
+    setStoryReply('')
+    setStoryItems((currentStories) =>
+      currentStories.map((item) =>
+        item.id === story.id ? { ...item, viewed: true } : item,
+      ),
+    )
+  }, [])
+
+  const submitStoryReply = (event) => {
+    event.preventDefault()
+    setStoryReply('')
+  }
+
+  const showPreviousStory = useCallback(() => {
+    if (viewableStories.length === 0 || selectedStoryIndex < 0) return
+
+    const previousIndex =
+      selectedStoryIndex === 0 ? viewableStories.length - 1 : selectedStoryIndex - 1
+
+    handleOpenStory(viewableStories[previousIndex])
+  }, [handleOpenStory, selectedStoryIndex, viewableStories])
+
+  const showNextStory = useCallback(() => {
+    if (viewableStories.length === 0 || selectedStoryIndex < 0) return
+
+    const nextIndex =
+      selectedStoryIndex === viewableStories.length - 1 ? 0 : selectedStoryIndex + 1
+
+    handleOpenStory(viewableStories[nextIndex])
+  }, [handleOpenStory, selectedStoryIndex, viewableStories])
+
+  useEffect(() => {
+    if (!selectedStory) return undefined
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setSelectedStoryId(null)
+      }
+
+      if (event.key === 'ArrowLeft') {
+        showPreviousStory()
+      }
+
+      if (event.key === 'ArrowRight') {
+        showNextStory()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedStory, showNextStory, showPreviousStory])
 
   const handleStoryPointerDown = (event) => {
     const slider = storySliderRef.current
-    if (!slider) return
+    if (!slider || event.target.closest('[data-story-upload]')) return
 
     dragState.current = {
       isDown: true,
@@ -125,6 +197,11 @@ const Home = () => {
   }
 
   const handleStoryClickCapture = (event) => {
+    if (event.target.closest('[data-story-card], [data-story-upload]')) {
+      dragState.current.moved = false
+      return
+    }
+
     if (!dragState.current.moved) return
 
     event.preventDefault()
@@ -133,16 +210,17 @@ const Home = () => {
   }
 
   return (
-    <MainLayout>
-      <motion.div
-        className="space-y-4 sm:space-y-5"
-        variants={pageVariants}
-        initial="hidden"
-        animate="show"
-      >
-        <motion.div variants={sectionVariants}>
-          <HeroSection />
-        </motion.div>
+    <>
+      <MainLayout>
+        <motion.div
+          className="space-y-4 sm:space-y-5"
+          variants={pageVariants}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div variants={sectionVariants}>
+            <HeroSection />
+          </motion.div>
 
         <motion.section
           ref={storySliderRef}
@@ -165,7 +243,11 @@ const Home = () => {
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.97 }}
             >
-              <StoryCard story={story} onCreateStory={handleCreateStory} />
+              <StoryCard
+                story={story}
+                onCreateStory={handleCreateStory}
+                onOpenStory={handleOpenStory}
+              />
             </motion.div>
           ))}
         </motion.section>
@@ -219,8 +301,186 @@ const Home = () => {
             <PostCard post={post} />
           </motion.div>
         ))}
-      </motion.div>
-    </MainLayout>
+        </motion.div>
+      </MainLayout>
+
+      <AnimatePresence>
+        {selectedStory && (
+          <motion.div
+            className="fixed inset-0 z-50 grid place-items-center bg-black/85 px-4 py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedStoryId(null)}
+          >
+            <motion.div
+              className="relative flex h-full max-h-[720px] w-full max-w-[430px] overflow-hidden rounded-2xl bg-black ring-1 ring-white/15 sm:max-h-[760px] lg:max-w-[900px]"
+              initial={{ scale: 0.96, y: 16 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: 16 }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="absolute left-3 right-3 top-3 z-10 h-1 overflow-hidden rounded-full bg-white/25 lg:right-[300px]">
+                <div className="h-full w-2/3 rounded-full bg-white" />
+              </div>
+
+              <div className="absolute left-3 right-3 top-7 z-10 flex items-center justify-between lg:right-[300px]">
+                <div className="flex min-w-0 items-center gap-2">
+                  {selectedStory.avatar ? (
+                    <img
+                      src={selectedStory.avatar}
+                      alt=""
+                      className="h-9 w-9 rounded-full border-2 border-[#8ddf00] object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-9 w-9 place-items-center rounded-full bg-[#8ddf00] text-sm font-extrabold text-black">
+                      {(selectedStory.title || 'S').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-extrabold text-white">
+                      {selectedStory.title || 'Story'}
+                    </p>
+                    <p className="text-xs font-semibold text-white/65">Just now</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20"
+                  aria-label="Close story"
+                  onClick={() => setSelectedStoryId(null)}
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {selectedStory.video ? (
+                <video
+                  key={selectedStory.id}
+                  src={selectedStory.video}
+                  className="h-full min-w-0 flex-1 object-cover"
+                  controls
+                  autoPlay
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={selectedStory.image}
+                  alt=""
+                  className="h-full min-w-0 flex-1 object-cover"
+                />
+              )}
+
+              <div className="absolute bottom-20 left-3 right-3 z-10 flex gap-2 overflow-x-auto [scrollbar-width:none] lg:right-[300px] [&::-webkit-scrollbar]:hidden">
+                {storyReactions.map((reaction) => (
+                  <button
+                    key={reaction}
+                    type="button"
+                    className={`rounded-full px-3 py-1.5 text-xs font-extrabold backdrop-blur transition ${
+                      selectedReaction === reaction
+                        ? 'bg-[#8ddf00] text-black'
+                        : 'bg-black/45 text-white hover:bg-black/65'
+                    }`}
+                    onClick={() => setSelectedReaction(reaction)}
+                  >
+                    {reaction}
+                  </button>
+                ))}
+              </div>
+
+              <form
+                className="absolute bottom-3 left-3 right-3 z-10 flex items-center gap-2 rounded-full bg-black/45 p-2 backdrop-blur lg:right-[300px]"
+                onSubmit={submitStoryReply}
+              >
+                <Smile className="h-5 w-5 flex-none text-white/75" />
+                <input
+                  value={storyReply}
+                  onChange={(event) => setStoryReply(event.target.value)}
+                  className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/60"
+                  placeholder="Reply to Story..."
+                  aria-label="Reply to story"
+                />
+                <button
+                  type="submit"
+                  className="grid h-8 w-8 flex-none place-items-center rounded-full bg-[#8ddf00] text-black"
+                  aria-label="Send story reply"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+
+              <button
+                type="button"
+                className="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/65"
+                aria-label="Previous story"
+                onClick={showPreviousStory}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white backdrop-blur transition hover:bg-black/65 lg:right-[300px]"
+                aria-label="Next story"
+                onClick={showNextStory}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+
+              <aside className="hidden w-[288px] flex-none flex-col gap-5 bg-white p-5 text-slate-900 lg:flex">
+                <div>
+                  <p className="text-xs font-extrabold uppercase text-slate-400">
+                    Story details
+                  </p>
+                  <h3 className="mt-1 text-xl font-extrabold">
+                    {selectedStory.title || 'Story'}
+                  </h3>
+                  <p className="mt-1 text-sm font-semibold text-slate-500">
+                    Viewed by {storyViewers.length} people
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-extrabold text-slate-900">Reactions</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {storyReactions.map((reaction) => (
+                      <button
+                        key={reaction}
+                        type="button"
+                        className={`rounded-full px-3 py-2 text-xs font-extrabold transition ${
+                          selectedReaction === reaction
+                            ? 'bg-[#8ddf00] text-black'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                        onClick={() => setSelectedReaction(reaction)}
+                      >
+                        {reaction}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-sm font-extrabold text-slate-900">Viewers</p>
+                  <div className="mt-3 space-y-2">
+                    {storyViewers.map((viewer) => (
+                      <div
+                        key={viewer}
+                        className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm font-bold text-slate-600"
+                      >
+                        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#ecffc8] text-xs font-extrabold text-black">
+                          {viewer.charAt(0)}
+                        </span>
+                        {viewer}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </aside>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
 

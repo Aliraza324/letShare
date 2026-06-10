@@ -1,16 +1,24 @@
-import { useMemo, useState } from 'react'
+import { useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   Bookmark,
   Heart,
   MessageCircle,
   MoreHorizontal,
-  Play,
   Send,
   Smile,
 } from 'lucide-react'
 import CommentCard from './CommentCard'
+import EmojiPicker from './EmojiPicker'
+import MediaGallery from './MediaGallery'
+import MentionDropdown from './MentionDropdown'
 import { useToast } from '../../utils/toastContext'
+import {
+  formatRelativeTime,
+  getMentionQuery,
+  insertAtCursor,
+  insertMention as insertMentionText,
+} from '../../utils/social'
 import { comments as seedComments } from '../../mock/homeFeed'
 import avatar from '../../assets/images/avatar.jpg'
 import boyAvatar from '../../assets/images/boy.png'
@@ -112,34 +120,9 @@ const addReplyToTree = (items, targetId, reply) =>
     return comment
   })
 
-const MentionSuggestions = ({ query, onSelect }) => {
-  const filteredUsers = mentionUsers
-    .filter((user) =>
-      user.name.toLowerCase().includes(query.replace('@', '').toLowerCase()),
-    )
-    .slice(0, 4)
-
-  if (!query || filteredUsers.length === 0) return null
-
-  return (
-    <div className="absolute bottom-full left-0 mb-2 w-56 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.12)]">
-      {filteredUsers.map((user) => (
-        <button
-          key={user.id}
-          type="button"
-          className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-[#f4fbdf]"
-          onClick={() => onSelect(user)}
-        >
-          <img src={user.avatar} alt="" className="h-6 w-6 rounded-full object-cover" />
-          @{user.handle}
-        </button>
-      ))}
-    </div>
-  )
-}
-
 const PostCard = ({ post }) => {
   const { showToast } = useToast()
+  const commentInputRef = useRef(null)
   const [showComments, setShowComments] = useState(false)
   const [commentItems, setCommentItems] = useState(() => createSeedComments())
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COMMENTS)
@@ -147,17 +130,15 @@ const PostCard = ({ post }) => {
   const [commentError, setCommentError] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [notifications, setNotifications] = useState([])
-  const mentionQuery = commentInput.match(/(^|\s)(@[a-zA-Z0-9_.]*)$/)?.[2] || ''
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [activeMentionIndex, setActiveMentionIndex] = useState(0)
+  const mentionQuery = getMentionQuery(commentInput)
 
-  const sortedComments = useMemo(() => {
-    const sorted = [...commentItems].sort((a, b) => {
+  const sortedComments = [...commentItems].sort((a, b) => {
       const aTime = new Date(a.createdAt).getTime()
       const bTime = new Date(b.createdAt).getTime()
       return SORT_ORDER === 'newest' ? bTime - aTime : aTime - bTime
     })
-
-    return sorted
-  }, [commentItems])
 
   const visibleComments = sortedComments.slice(0, visibleCount)
   const totalComments = countComments(commentItems)
@@ -238,9 +219,39 @@ const PostCard = ({ post }) => {
   }
 
   const insertMention = (user) => {
-    setCommentInput((current) =>
-      current.replace(/(^|\s)(@[a-zA-Z0-9_.]*)$/, `$1@${user.handle} `),
+    setCommentInput((current) => insertMentionText(current, user))
+    setActiveMentionIndex(0)
+    window.requestAnimationFrame(() => commentInputRef.current?.focus())
+  }
+
+  const insertEmoji = (emoji) => {
+    const { nextCursor, nextValue } = insertAtCursor(
+      commentInput,
+      emoji,
+      commentInputRef.current,
     )
+
+    setCommentInput(nextValue)
+    setShowEmojiPicker(false)
+
+    window.requestAnimationFrame(() => {
+      commentInputRef.current?.focus()
+      commentInputRef.current?.setSelectionRange(nextCursor, nextCursor)
+    })
+  }
+
+  const handleCommentKeyDown = (event) => {
+    if (!mentionQuery) return
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setActiveMentionIndex((current) => Math.min(current + 1, 4))
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setActiveMentionIndex((current) => Math.max(current - 1, 0))
+    }
   }
 
   const handleSavePost = () => {
@@ -272,7 +283,7 @@ const PostCard = ({ post }) => {
             <span className="text-[#7ac900]">●</span>
           </div>
           <p className="mt-0.5 text-xs text-slate-400">
-            {post.time} • {post.visibility}
+            {formatRelativeTime(post.createdAt)} • {post.visibility}
           </p>
         </div>
 
@@ -289,22 +300,7 @@ const PostCard = ({ post }) => {
         {post.content}
       </p>
 
-      <div className="relative mx-4 overflow-hidden rounded-[14px] bg-slate-100">
-        <img
-          src={post.image}
-          alt=""
-          className="h-[230px] w-full object-cover sm:h-[300px]"
-        />
-        {post.isVideo && (
-          <button
-            type="button"
-            className="absolute inset-0 m-auto grid h-14 w-14 place-items-center rounded-full border-4 border-white bg-[#8ddf00] text-white shadow-[0_12px_26px_rgba(15,23,42,0.22)]"
-            aria-label="Play video"
-          >
-            <Play className="ml-1 h-7 w-7 fill-white" />
-          </button>
-        )}
-      </div>
+      <MediaGallery post={post} />
 
       <div className="flex items-center justify-between px-4 py-3 text-slate-400">
         <div className="flex items-center gap-5 text-xs font-medium">
@@ -351,7 +347,7 @@ const PostCard = ({ post }) => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden border-t border-slate-100"
+            className="overflow-visible border-t border-slate-100"
           >
             <div className="px-4 pb-4 pt-3">
               {notifications.length > 0 && (
@@ -401,11 +397,23 @@ const PostCard = ({ post }) => {
                   />
                   <div className="relative min-w-0 flex-1">
                     <label className="flex h-10 min-w-0 items-center gap-2 rounded-full bg-slate-100 px-4 text-slate-400 focus-within:ring-2 focus-within:ring-[#a6ef00]/40">
-                      <Smile className="h-4 w-4 shrink-0" />
+                      <button
+                        type="button"
+                        className="shrink-0 text-slate-400 transition hover:text-slate-600"
+                        aria-label="Open emoji picker"
+                        onClick={() => setShowEmojiPicker((current) => !current)}
+                      >
+                        <Smile className="h-4 w-4" />
+                      </button>
                       <input
+                        ref={commentInputRef}
                         type="text"
                         value={commentInput}
-                        onChange={(event) => setCommentInput(event.target.value)}
+                        onChange={(event) => {
+                          setCommentInput(event.target.value)
+                          setActiveMentionIndex(0)
+                        }}
+                        onKeyDown={handleCommentKeyDown}
                         placeholder="Add a comment..."
                         className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
                       />
@@ -419,8 +427,17 @@ const PostCard = ({ post }) => {
                       </button>
                     </label>
 
-                    <MentionSuggestions
+                    {showEmojiPicker && (
+                      <EmojiPicker
+                        onClose={() => setShowEmojiPicker(false)}
+                        onSelect={insertEmoji}
+                      />
+                    )}
+
+                    <MentionDropdown
+                      activeIndex={activeMentionIndex}
                       query={mentionQuery}
+                      users={mentionUsers}
                       onSelect={insertMention}
                     />
                   </div>

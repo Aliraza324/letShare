@@ -1,6 +1,14 @@
-import { Image, Play, Plus, Video } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Image, Play, Plus, Smile, Video } from 'lucide-react'
+import EmojiPicker from './EmojiPicker'
+import { insertAtCursor } from '../../utils/social'
 
 const StoryCard = ({ onCreateStory, onOpenStory, story }) => {
+  const fileInputRef = useRef(null)
+  const captionInputRef = useRef(null)
+  const [caption, setCaption] = useState('')
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+
   const stopStoryDrag = (event) => {
     event.stopPropagation()
   }
@@ -9,10 +17,27 @@ const StoryCard = ({ onCreateStory, onOpenStory, story }) => {
     const files = Array.from(event.target.files || [])
 
     if (files.length > 0) {
-      onCreateStory?.(files)
+      onCreateStory?.(files, caption.trim())
+      setCaption('')
     }
 
     event.target.value = ''
+  }
+
+  const insertCaptionEmoji = (emoji) => {
+    const { nextCursor, nextValue } = insertAtCursor(
+      caption,
+      emoji,
+      captionInputRef.current,
+    )
+
+    setCaption(nextValue)
+    setShowEmojiPicker(false)
+
+    window.requestAnimationFrame(() => {
+      captionInputRef.current?.focus()
+      captionInputRef.current?.setSelectionRange(nextCursor, nextCursor)
+    })
   }
 
   const isOwnStory =
@@ -25,12 +50,13 @@ const StoryCard = ({ onCreateStory, onOpenStory, story }) => {
 
   if (story.type === 'create') {
     return (
-      <label
+      <div
         className="group relative flex h-[72px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[8px] bg-black text-center ring-1 ring-black/5 transition focus-within:ring-2 focus-within:ring-[#8ddf00] sm:aspect-[0.9] sm:h-auto sm:min-h-[190px] sm:rounded-xl sm:bg-[#ecffc8]"
         data-story-upload
         onPointerDown={stopStoryDrag}
       >
         <input
+          ref={fileInputRef}
           type="file"
           accept="image/*,video/*"
           multiple
@@ -42,16 +68,42 @@ const StoryCard = ({ onCreateStory, onOpenStory, story }) => {
           <Image className="h-3.5 w-3.5" />
           <Video className="h-3.5 w-3.5" />
         </span>
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#8ddf00] text-black transition group-hover:scale-105 sm:h-11 sm:w-11">
+        <button
+          type="button"
+          className="grid h-7 w-7 place-items-center rounded-full bg-[#8ddf00] text-black transition group-hover:scale-105 sm:h-11 sm:w-11"
+          aria-label="Upload story image or video"
+          onClick={() => fileInputRef.current?.click()}
+        >
           <Plus className="h-4 w-4 stroke-[2.4] sm:h-6 sm:w-6" />
-        </span>
+        </button>
         <span className="mt-2 max-w-[44px] text-[8px] font-extrabold leading-tight text-[#8ddf00] sm:mt-7 sm:max-w-[92px] sm:text-lg sm:leading-none">
           {title}
         </span>
-        <span className="mt-1 hidden text-[10px] font-bold text-black/55 sm:block">
-          Image or video
-        </span>
-      </label>
+        <div className="relative mt-2 hidden w-[88%] items-center gap-1 rounded-full bg-white/75 px-2 py-1 sm:flex">
+          <button
+            type="button"
+            className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-slate-500 transition hover:bg-white hover:text-slate-700"
+            aria-label="Open story caption emoji picker"
+            onClick={() => setShowEmojiPicker((current) => !current)}
+          >
+            <Smile className="h-3.5 w-3.5" />
+          </button>
+          <input
+            ref={captionInputRef}
+            value={caption}
+            onChange={(event) => setCaption(event.target.value)}
+            className="min-w-0 flex-1 bg-transparent text-xs font-bold text-slate-700 outline-none placeholder:text-slate-400"
+            placeholder="Caption..."
+            aria-label="Story caption"
+          />
+          {showEmojiPicker && (
+            <EmojiPicker
+              onClose={() => setShowEmojiPicker(false)}
+              onSelect={insertCaptionEmoji}
+            />
+          )}
+        </div>
+      </div>
     )
   }
 

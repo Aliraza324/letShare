@@ -1,8 +1,13 @@
-import { memo, useMemo, useState } from 'react'
+import { memo, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Heart, Send, Smile } from 'lucide-react'
-
-const mentionPattern = /(@[a-zA-Z0-9_.]+)/g
+import { Mention, MentionsInput } from 'react-mentions'
+import EmojiPicker from './EmojiPicker'
+import {
+  formatRelativeTime,
+  insertAtCursor,
+  mentionPattern,
+} from '../../utils/social'
 
 const formatNumber = (value) => {
   if (value >= 1000) {
@@ -10,18 +15,6 @@ const formatNumber = (value) => {
   }
 
   return String(value)
-}
-
-const formatRelativeTime = (date) => {
-  const diff = Math.max(0, Date.now() - new Date(date).getTime())
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(minutes / 60)
-  const days = Math.floor(hours / 24)
-
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  return `${days}d ago`
 }
 
 const CommentText = memo(({ text }) => {
@@ -44,41 +37,21 @@ const CommentText = memo(({ text }) => {
 
 CommentText.displayName = 'CommentText'
 
-const MentionSuggestions = ({ query, users, onSelect }) => {
-  const filteredUsers = users
-    .filter((user) =>
-      user.name.toLowerCase().includes(query.replace('@', '').toLowerCase()),
-    )
-    .slice(0, 4)
-
-  if (!query || filteredUsers.length === 0) return null
-
-  return (
-    <div className="absolute bottom-full left-0 mb-2 w-56 overflow-hidden rounded-xl border border-slate-100 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.12)]">
-      {filteredUsers.map((user) => (
-        <button
-          key={user.id}
-          type="button"
-          className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-[#f4fbdf]"
-          onClick={() => onSelect(user)}
-        >
-          <img src={user.avatar} alt="" className="h-6 w-6 rounded-full object-cover" />
-          @{user.handle}
-        </button>
-      ))}
-    </div>
-  )
-}
-
 const ReplyComposer = ({
   autoFocus = false,
   error,
   onSubmit,
+  replyToHandle,
   submitting,
   users,
 }) => {
-  const [value, setValue] = useState('')
-  const mentionQuery = value.match(/(^|\s)(@[a-zA-Z0-9_.]*)$/)?.[2] || ''
+  const inputRef = useRef(null)
+  const [value, setValue] = useState(replyToHandle ? `@${replyToHandle} ` : '')
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const mentionData = users.map((user) => ({
+    id: user.handle,
+    display: user.name,
+  }))
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -87,26 +60,79 @@ const ReplyComposer = ({
     })
   }
 
-  const insertMention = (user) => {
-    setValue((current) =>
-      current.replace(/(^|\s)(@[a-zA-Z0-9_.]*)$/, `$1@${user.handle} `),
-    )
+  const insertEmoji = (emoji) => {
+    const { nextCursor, nextValue } = insertAtCursor(value, emoji, inputRef.current)
+    setValue(nextValue)
+    setShowEmojiPicker(false)
+
+    window.requestAnimationFrame(() => {
+      inputRef.current?.focus()
+      inputRef.current?.setSelectionRange(nextCursor, nextCursor)
+    })
   }
 
   return (
-    <form className="mt-3" onSubmit={handleSubmit}>
+    <form className="mt-3 pt-1" onSubmit={handleSubmit}>
       <div className="relative flex items-center gap-2">
-        <label className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full bg-slate-100 px-3 text-slate-400 focus-within:ring-2 focus-within:ring-[#a6ef00]/40">
-          <Smile className="h-4 w-4 shrink-0" />
-          <input
+        <div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-full bg-slate-100 px-3 text-slate-400 transition focus-within:shadow-[inset_0_0_0_2px_rgba(166,239,0,0.72)]">
+          <button
+            type="button"
+            className="shrink-0 transition hover:text-slate-600"
+            aria-label="Open emoji picker"
+            onClick={() => setShowEmojiPicker((current) => !current)}
+          >
+            <Smile className="h-4 w-4" />
+          </button>
+          <MentionsInput
+            inputRef={inputRef}
             autoFocus={autoFocus}
             value={value}
             onChange={(event) => setValue(event.target.value)}
-            type="text"
             placeholder="Write a reply..."
-            className="h-full min-w-0 flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-          />
-        </label>
+            singleLine
+            className="min-w-0 flex-1"
+            style={{
+              control: {
+                minHeight: 30,
+                backgroundColor: 'transparent',
+                fontSize: 14,
+                color: 'rgb(51 65 85)',
+              },
+              highlighter: {
+                padding: 0,
+                lineHeight: '30px',
+              },
+              input: {
+                padding: 0,
+                height: 30,
+                outline: 0,
+                lineHeight: '30px',
+              },
+              suggestions: {
+                list: {
+                  overflow: 'hidden',
+                  border: '1px solid rgb(241 245 249)',
+                  borderRadius: 16,
+                  backgroundColor: 'white',
+                  boxShadow: '0 18px 45px rgba(15,23,42,0.14)',
+                },
+                item: {
+                  padding: '10px 12px',
+                  fontSize: 13,
+                  fontWeight: 700,
+                },
+              },
+            }}
+          >
+            <Mention
+              appendSpaceOnAdd
+              data={mentionData}
+              displayTransform={(id) => `@${id}`}
+              markup="@__id__"
+              trigger="@"
+            />
+          </MentionsInput>
+        </div>
 
         <button
           type="submit"
@@ -117,11 +143,13 @@ const ReplyComposer = ({
           <Send className="h-4 w-4" />
         </button>
 
-        <MentionSuggestions
-          query={mentionQuery}
-          users={users}
-          onSelect={insertMention}
-        />
+        {showEmojiPicker && (
+          <EmojiPicker
+            onClose={() => setShowEmojiPicker(false)}
+            onSelect={insertEmoji}
+          />
+        )}
+
       </div>
       {error && <p className="mt-1 px-3 text-xs font-medium text-red-500">{error}</p>}
     </form>
@@ -141,6 +169,9 @@ const CommentCard = memo(
     const [replyError, setReplyError] = useState('')
     const [isSubmittingReply, setIsSubmittingReply] = useState(false)
     const replies = comment.replies || []
+    const replyToHandle =
+      users.find((user) => user.name === comment.author)?.handle ||
+      comment.author.toLowerCase().replace(/[^a-z0-9_.]+/g, '')
 
     const handleReplySubmit = (text, { onSuccess }) => {
       setReplyError('')
@@ -222,13 +253,14 @@ const CommentCard = memo(
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
+                  className="overflow-visible"
                 >
                   <ReplyComposer
                     autoFocus
                     currentUser={currentUser}
                     error={replyError}
                     onSubmit={handleReplySubmit}
+                    replyToHandle={replyToHandle}
                     submitting={isSubmittingReply}
                     users={users}
                   />

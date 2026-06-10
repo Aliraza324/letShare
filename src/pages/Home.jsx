@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Send, Smile, X } from 'lucide-react'
+import InfiniteScroll from 'react-infinite-scroll-component'
 import MainLayout from '../layouts/MainLayout'
 import ExploreCommunities from '../components/home/ExploreCommunities'
 import HeroSection from '../components/home/HeroSection'
 import PostComposer from '../components/home/PostComposer'
+import EmojiPicker from '../components/shared/EmojiPicker'
 import PostCard from '../components/shared/PostCard'
 import StoryCard from '../components/shared/StoryCard'
 import { feedPosts, stories } from '../mock/homeFeed'
+import { insertAtCursor } from '../utils/social'
 
 const pageVariants = {
   hidden: { opacity: 0 },
@@ -46,9 +49,12 @@ const storyVariants = {
 
 const storyReactions = ['Like', 'Love', 'Haha', 'Wow', 'Sad']
 const storyViewers = ['Ali', 'Ahmed', 'Sara', 'John']
+const FEED_BATCH_SIZE = 3
+const MAX_FEED_POSTS = 12
 
 const Home = () => {
   const storySliderRef = useRef(null)
+  const storyReplyRef = useRef(null)
   const uploadedStoryUrls = useRef([])
   const dragState = useRef({
     isDown: false,
@@ -61,6 +67,9 @@ const Home = () => {
   const [selectedStoryId, setSelectedStoryId] = useState(null)
   const [storyReply, setStoryReply] = useState('')
   const [selectedReaction, setSelectedReaction] = useState('')
+  const [showStoryEmojiPicker, setShowStoryEmojiPicker] = useState(false)
+  const [visiblePostCount, setVisiblePostCount] = useState(FEED_BATCH_SIZE)
+  const [feedBaseTime] = useState(() => Date.now())
   const viewableStories = useMemo(
     () => storyItems.filter((story) => story.type !== 'create'),
     [storyItems],
@@ -69,6 +78,21 @@ const Home = () => {
     (story) => story.id === selectedStoryId,
   )
   const selectedStory = selectedStoryIndex >= 0 ? viewableStories[selectedStoryIndex] : null
+  const hydratedPosts = useMemo(
+    () =>
+      Array.from({ length: MAX_FEED_POSTS }, (_, index) => {
+        const seedPost = feedPosts[index % feedPosts.length]
+
+        return {
+          ...seedPost,
+          id: `${seedPost.id}-${index}`,
+          createdAt: new Date(feedBaseTime - (index + 1) * 38 * 60000).toISOString(),
+        }
+      }),
+    [feedBaseTime],
+  )
+  const visiblePosts = hydratedPosts.slice(0, visiblePostCount)
+  const hasMorePosts = visiblePostCount < hydratedPosts.length
 
   useEffect(() => {
     const objectUrls = uploadedStoryUrls.current
@@ -78,7 +102,15 @@ const Home = () => {
     }
   }, [])
 
-  const handleCreateStory = (files) => {
+  const loadMorePosts = () => {
+    window.setTimeout(() => {
+      setVisiblePostCount((current) =>
+        Math.min(current + FEED_BATCH_SIZE, hydratedPosts.length),
+      )
+    }, 550)
+  }
+
+  const handleCreateStory = (files, caption = '') => {
     const uploadedStories = files
       .filter((file) => file.type.startsWith('image/') || file.type.startsWith('video/'))
       .map((file) => {
@@ -88,7 +120,7 @@ const Home = () => {
 
         return {
           id: `uploaded-${url}`,
-          title: 'Your moment',
+          title: caption || 'Your moment',
           ...(file.type.startsWith('video/') ? { video: url } : { image: url }),
         }
       })
@@ -117,6 +149,22 @@ const Home = () => {
   const submitStoryReply = (event) => {
     event.preventDefault()
     setStoryReply('')
+  }
+
+  const insertStoryEmoji = (emoji) => {
+    const { nextCursor, nextValue } = insertAtCursor(
+      storyReply,
+      emoji,
+      storyReplyRef.current,
+    )
+
+    setStoryReply(nextValue)
+    setShowStoryEmojiPicker(false)
+
+    window.requestAnimationFrame(() => {
+      storyReplyRef.current?.focus()
+      storyReplyRef.current?.setSelectionRange(nextCursor, nextCursor)
+    })
   }
 
   const showPreviousStory = useCallback(() => {
@@ -292,16 +340,43 @@ const Home = () => {
           </div>
         </motion.section>
 
-        {feedPosts.map((post) => (
-          <motion.div
-            key={post.id}
-            variants={sectionVariants}
-            whileHover={{ y: -3 }}
-          >
-            <PostCard post={post} />
-          </motion.div>
-        ))}
-        </motion.div>
+        <InfiniteScroll
+          dataLength={visiblePosts.length}
+          hasMore={hasMorePosts}
+          loader={
+            <div className="space-y-3">
+              {[0, 1].map((item) => (
+                <div
+                  key={item}
+                  className="overflow-hidden rounded-[18px] bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.06)]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 animate-pulse rounded-full bg-slate-100" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 w-32 animate-pulse rounded-full bg-slate-100" />
+                      <div className="h-3 w-20 animate-pulse rounded-full bg-slate-100" />
+                    </div>
+                  </div>
+                  <div className="mt-4 h-64 animate-pulse rounded-2xl bg-slate-100" />
+                </div>
+              ))}
+            </div>
+          }
+          next={loadMorePosts}
+          scrollThreshold={0.82}
+          className="space-y-3 overflow-visible"
+        >
+          {visiblePosts.map((post) => (
+            <motion.div
+              key={post.id}
+              variants={sectionVariants}
+              whileHover={{ y: -3 }}
+            >
+              <PostCard post={post} />
+            </motion.div>
+          ))}
+        </InfiniteScroll>
+      </motion.div>
       </MainLayout>
 
       <AnimatePresence>
@@ -392,8 +467,24 @@ const Home = () => {
                 className="absolute bottom-3 left-3 right-3 z-10 flex items-center gap-2 rounded-full bg-black/45 p-2 backdrop-blur lg:right-[300px]"
                 onSubmit={submitStoryReply}
               >
-                <Smile className="h-5 w-5 flex-none text-white/75" />
+                <div className="relative flex-none">
+                  <button
+                    type="button"
+                    className="grid h-8 w-8 place-items-center rounded-full text-white/75 transition hover:bg-white/10 hover:text-white"
+                    aria-label="Open story emoji picker"
+                    onClick={() => setShowStoryEmojiPicker((current) => !current)}
+                  >
+                    <Smile className="h-5 w-5" />
+                  </button>
+                  {showStoryEmojiPicker && (
+                    <EmojiPicker
+                      onClose={() => setShowStoryEmojiPicker(false)}
+                      onSelect={insertStoryEmoji}
+                    />
+                  )}
+                </div>
                 <input
+                  ref={storyReplyRef}
                   value={storyReply}
                   onChange={(event) => setStoryReply(event.target.value)}
                   className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-white outline-none placeholder:text-white/60"

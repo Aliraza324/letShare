@@ -7,6 +7,7 @@ import hr from '../assets/images/hr.jpg'
 import girl from '../assets/images/girl.jpg'
 import jannat from '../assets/images/jannat.jpg'
 import samra from '../assets/images/samra.jpg'
+import thirdVideo from '../assets/videos/thirdVideo.mp4'
 
 export const stories = [
   { id: 1, type: 'create', title: 'Share moment' },
@@ -32,10 +33,16 @@ export const feedPosts = [
     content:
       'Best places to visit this summer? Looking for hidden gems in Europe!',
     image: fatima,
+    media: [
+      { id: 'post-1-1', type: 'image', src: fatima },
+      { id: 'post-1-2', type: 'image', src: girl },
+      { id: 'post-1-3', type: 'image', src: hr },
+    ],
     likes: '1.2k',
     comments: '342',
     shares: '47',
     time: '2h ago',
+    createdAt: new Date(Date.now() - 2 * 60 * 60000).toISOString(),
     visibility: 'Public',
   },
   {
@@ -47,10 +54,15 @@ export const feedPosts = [
     content:
       'Paradise found! #travel #nature',
     image: hr,
+    media: [
+      { id: 'post-2-1', type: 'video', src: thirdVideo, thumbnail: hr },
+      { id: 'post-2-2', type: 'image', src: jannat },
+    ],
     likes: '1.2k',
     comments: '542',
     shares: '89',
     time: '4h ago',
+    createdAt: new Date(Date.now() - 4 * 60 * 60000).toISOString(),
     visibility: 'Public',
     isVideo: true,
   },
@@ -63,10 +75,19 @@ export const feedPosts = [
     content:
       'Tiny reminder: ship the rough version. Your future self can polish what your current self actually releases.',
     image: girl,
+    media: [
+      { id: 'post-3-1', type: 'image', src: girl },
+      { id: 'post-3-2', type: 'image', src: pinki },
+      { id: 'post-3-3', type: 'image', src: avatar },
+      { id: 'post-3-4', type: 'image', src: samra },
+      { id: 'post-3-5', type: 'image', src: david },
+      { id: 'post-3-6', type: 'image', src: fatima },
+    ],
     likes: '203',
     comments: '34',
     shares: '21',
     time: '6h ago',
+    createdAt: new Date(Date.now() - 6 * 60 * 60000).toISOString(),
     visibility: 'Public',
   },
 ]

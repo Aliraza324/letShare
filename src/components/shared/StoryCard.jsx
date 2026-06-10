@@ -1,14 +1,26 @@
 import { Plus } from 'lucide-react'
 
-const StoryCard = ({ story }) => {
+const StoryCard = ({ onCreateStory, story }) => {
+  const handleFilesSelected = (event) => {
+    const files = Array.from(event.target.files || [])
+
+    if (files.length > 0) {
+      onCreateStory?.(files)
+    }
+
+    event.target.value = ''
+  }
+
   if (story.type === 'create') {
     return (
       <label className="flex h-[72px] cursor-pointer flex-col items-center justify-center rounded-[8px] bg-black text-center sm:aspect-[0.9] sm:h-auto sm:min-h-[190px] sm:rounded-xl sm:bg-[#ecffc8]">
         <input
           type="file"
           accept="image/*,video/*"
+          multiple
           className="sr-only"
           aria-label="Upload image or video"
+          onChange={handleFilesSelected}
         />
         <span className="grid h-7 w-7 place-items-center rounded-full bg-[#8ddf00] text-black shadow-[0_10px_18px_rgba(122,201,0,0.34)] sm:h-11 sm:w-11">
           <Plus className="h-4 w-4 stroke-[2.4] sm:h-6 sm:w-6" />
@@ -22,11 +34,23 @@ const StoryCard = ({ story }) => {
 
   return (
     <article className="relative h-[72px] overflow-hidden rounded-[8px] bg-white sm:aspect-[0.9] sm:h-auto sm:min-h-[190px] sm:rounded-xl">
-      <img
-        src={story.image}
-        alt={story.title}
-        className="h-full w-full object-cover"
-      />
+      {story.video ? (
+        <video
+          src={story.video}
+          aria-label={story.title}
+          className="h-full w-full object-cover"
+          muted
+          loop
+          playsInline
+          autoPlay
+        />
+      ) : (
+        <img
+          src={story.image}
+          alt={story.title}
+          className="h-full w-full object-cover"
+        />
+      )}
       {story.avatar && (
         <img
           src={story.avatar}

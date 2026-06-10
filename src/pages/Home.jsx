@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import MainLayout from '../layouts/MainLayout'
 import ExploreCommunities from '../components/home/ExploreCommunities'
@@ -45,6 +45,7 @@ const storyVariants = {
 
 const Home = () => {
   const storySliderRef = useRef(null)
+  const uploadedStoryUrls = useRef([])
   const dragState = useRef({
     isDown: false,
     moved: false,
@@ -52,6 +53,39 @@ const Home = () => {
     scrollLeft: 0,
   })
   const [isDraggingStories, setIsDraggingStories] = useState(false)
+  const [storyItems, setStoryItems] = useState(stories)
+
+  useEffect(() => {
+    const objectUrls = uploadedStoryUrls.current
+
+    return () => {
+      objectUrls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [])
+
+  const handleCreateStory = (files) => {
+    const uploadedStories = files
+      .filter((file) => file.type.startsWith('image/') || file.type.startsWith('video/'))
+      .map((file) => {
+        const url = URL.createObjectURL(file)
+
+        uploadedStoryUrls.current.push(url)
+
+        return {
+          id: `uploaded-${url}`,
+          title: 'Your moment',
+          ...(file.type.startsWith('video/') ? { video: url } : { image: url }),
+        }
+      })
+
+    if (uploadedStories.length === 0) return
+
+    setStoryItems((currentStories) => [
+      currentStories[0],
+      ...uploadedStories,
+      ...currentStories.slice(1),
+    ])
+  }
 
   const handleStoryPointerDown = (event) => {
     const slider = storySliderRef.current
@@ -123,7 +157,7 @@ const Home = () => {
           onPointerCancel={stopStoryDrag}
           onPointerLeave={stopStoryDrag}
         >
-          {stories.map((story) => (
+          {storyItems.map((story) => (
             <motion.div
               key={story.id}
               className="w-16 flex-none sm:w-[152px] lg:w-[164px]"
@@ -131,7 +165,7 @@ const Home = () => {
               whileHover={{ y: -4 }}
               whileTap={{ scale: 0.97 }}
             >
-              <StoryCard story={story} />
+              <StoryCard story={story} onCreateStory={handleCreateStory} />
             </motion.div>
           ))}
         </motion.section>
